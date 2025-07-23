@@ -2,11 +2,11 @@ use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
 use std::{f64, iter};
 
-const DEFAULT_C:f64 = 0.1;
-const DEFAULT_DELTA: f64 = 0.5;
-const PRNG_A:u32 = 16807;
-const PRNG_M:u32 = u32::MAX;
-const PRNG_MAX_RAND:u32 = PRNG_M - 1;
+pub const DEFAULT_C:f64 = 0.1;
+pub const DEFAULT_DELTA: f64 = 0.5;
+pub const PRNG_A:u32 = 16807;
+pub const PRNG_M:u32 = u32::MAX;
+pub const PRNG_MAX_RAND:u32 = PRNG_M - 1;
 
 fn gen_tau(s:f64, k:usize, delta: f64) -> Vec<f64>{
     let pivot = (k as f64 / s).floor() as usize;
@@ -46,25 +46,25 @@ fn gen_rsd_cdf(k:usize, delta: f64, c:f64) ->Vec<f64>{
     (0..k).map(|d:usize| mu.iter().take(d+1).sum::<f64>()).collect()
 }
 
-struct PRNG {
+pub struct PRNG {
     state: u32,
     k:usize,
     cdf: Vec<f64>
 }
 
 impl PRNG{
-    fn new(params: (usize, f64, f64)) -> PRNG {
+    pub fn new(params: (usize, f64, f64)) -> PRNG {
         let (k, delta, c) = params;
         let cdf = gen_rsd_cdf(k, delta, c);
         PRNG { state: 0, k: k, cdf: cdf }
     }
 
-    fn _get_next(&mut self) -> u32{
-        self.state = (PRNG_A * self.state) % PRNG_M;
+    pub fn _get_next(&mut self) -> u32{
+        self.state = ((PRNG_A as u64 * self.state as u64) % PRNG_M as u64) as u32;
         self.state
     }
 
-    fn _sample_d(&mut self) -> usize {
+    pub fn _sample_d(&mut self) -> usize {
         let p = (self._get_next() as f64) / PRNG_MAX_RAND as f64;
         for (ix, &v) in self.cdf.iter().enumerate() {
             if v > p {
@@ -74,11 +74,11 @@ impl PRNG{
         self.cdf.len()
     }
 
-    fn set_seed(&mut self, seed:u32) {
+    pub fn set_seed(&mut self, seed:u32) {
         self.state = seed;
     }
 
-    fn get_src_block(&mut self, seed: Option<u32>) -> (u32, usize, Vec<usize>){
+    pub fn get_src_blocks(&mut self, seed: Option<u32>) -> (u32, usize, Vec<usize>){
         if let Some(seed) = seed {
             self.state = seed;
         }
